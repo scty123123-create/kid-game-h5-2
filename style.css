@@ -1027,7 +1027,7 @@ h2 {
   transition: opacity 260ms ease;
 }
 
-.vote-card.active .vote-copy > i {
+.vote-list.has-results .vote-copy > i {
   opacity: 1;
 }
 
