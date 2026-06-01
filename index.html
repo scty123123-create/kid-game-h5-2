@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>诗画密室 · 亲子汉字闯关</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="phone-shell" aria-label="诗画密室 H5 体验">
+      <nav class="topbar" aria-label="页面进度">
+        <button class="icon-button" id="prevBtn" type="button" aria-label="上一页">‹</button>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+        <button class="music-button" id="musicBtn" type="button" aria-label="打开背景音乐" aria-pressed="false">♪</button>
+        <button class="icon-button" id="nextBtn" type="button" aria-label="下一页">›</button>
+      </nav>
+
+      <section class="screen hero-screen active" data-page="0">
+        <img class="hero-image" src="./assets/hero-children-day.png" alt="" />
+        <div class="hero-shade"></div>
+        <div class="hero-feedback" aria-hidden="true">
+          <div class="magic-lamp">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow">6·1 儿童节亲子诗画闯关</p>
+          <h1>诗画密室</h1>
+          <p class="lead">猜一个字，点亮一幅画。大人读诗，小孩过节破关。</p>
+        </div>
+        <div class="poem-panel">
+          <div class="ink-title">第 1 关 · 诗里少了一个字</div>
+          <p class="poem-line">春风又 <span class="missing" id="poemSlot">__</span> 江南岸</p>
+          <div class="choice-row" data-quiz="poem">
+            <button type="button" data-answer="红">红</button>
+            <button type="button" data-answer="绿">绿</button>
+            <button type="button" data-answer="到">到</button>
+          </div>
+          <p class="result-text" id="poemResult">选中正确的字，黑白春岸会醒过来。</p>
+        </div>
+      </section>
+
+      <section class="screen idiom-screen" data-page="1">
+        <div class="section-head">
+          <p class="eyebrow">第 2 关</p>
+          <h2>成语拼图</h2>
+          <p>四个字藏在画里，孩子找字，家长接故事。</p>
+        </div>
+        <div class="scene idiom-scene">
+          <svg viewBox="0 0 360 440" role="img" aria-label="画蛇添足成语图">
+            <rect x="0" y="0" width="360" height="440" rx="22" fill="#f3ead9" />
+            <path d="M44 232 C82 120 170 310 252 168 C290 103 329 150 316 206" fill="none" stroke="#2d5a4d" stroke-width="27" stroke-linecap="round" />
+            <path d="M58 226 C103 146 171 274 239 176 C279 119 306 144 301 192" fill="none" stroke="#79a56e" stroke-width="14" stroke-linecap="round" />
+            <circle cx="302" cy="188" r="18" fill="#79a56e" />
+            <circle cx="309" cy="181" r="3.5" fill="#1f2b29" />
+            <path d="M319 193 l18 7 l-19 6" fill="none" stroke="#bd5338" stroke-width="4" stroke-linecap="round" />
+            <g class="snake-feet">
+              <path d="M112 218 l-24 25 M112 218 l14 31" />
+              <path d="M180 241 l-22 27 M180 241 l16 29" />
+              <path d="M243 177 l-18 31 M243 177 l22 20" />
+            </g>
+            <text class="hidden-char" x="36" y="68">画</text>
+            <text class="hidden-char" x="284" y="82">蛇</text>
+            <text class="hidden-char" x="52" y="382">添</text>
+            <text class="hidden-char" x="275" y="366">足</text>
+            <path d="M42 405 C118 382 249 386 320 410" fill="none" stroke="#d6b16f" stroke-width="8" stroke-linecap="round" />
+          </svg>
+          <div class="found-strip" id="idiomStrip">
+            <span>?</span><span>?</span><span>?</span><span>?</span>
+          </div>
+          <div class="success-badge" id="idiomSuccess" aria-live="polite">
+            <strong>恭喜你</strong>
+            <span>回答正确</span>
+          </div>
+        </div>
+        <div class="choice-grid" data-quiz="idiom">
+          <button type="button" data-answer="画">画</button>
+          <button type="button" data-answer="蛇">蛇</button>
+          <button type="button" data-answer="足">足</button>
+          <button type="button" data-answer="添">添</button>
+          <button type="button" data-answer="月">月</button>
+          <button type="button" data-answer="风">风</button>
+        </div>
+        <p class="result-text" id="idiomResult">找到四个字，蛇身上多出来的脚就是答案。</p>
+      </section>
+
+      <section class="screen radical-screen" data-page="2">
+        <div class="section-head">
+          <p class="eyebrow">第 3 关</p>
+          <h2>字形变变变</h2>
+          <p>同一个偏旁，在不同场景里长成不同的字。</p>
+        </div>
+        <div class="radical-stage">
+          <div class="radical-card">
+            <span class="radical">氵</span>
+            <span class="radical-word" id="radicalWord">?</span>
+          </div>
+          <div class="scene-tabs" data-quiz="radical">
+            <button class="active" type="button" data-answer="河" data-label="河边">河边</button>
+            <button type="button" data-answer="海" data-label="海边">海边</button>
+            <button type="button" data-answer="泪" data-label="眼泪">眼泪</button>
+          </div>
+          <div class="radical-scene river-scene" id="radicalScene" aria-live="polite">
+            <svg viewBox="0 0 360 120" role="img" aria-label="河边场景">
+              <g class="scene-river">
+                <rect class="sky" width="360" height="120" />
+                <path class="river-bank" d="M0 78 C68 57 118 78 180 58 C248 36 300 48 360 28 L360 120 L0 120 Z" />
+                <path class="river-water" d="M0 84 C70 70 126 88 184 70 C238 54 294 61 360 45 L360 120 L0 120 Z" />
+                <path class="boat" d="M218 80 C238 91 268 91 291 80 C274 105 236 105 218 80 Z" />
+                <path class="boat-sail" d="M254 77 L254 40 L279 72 Z" />
+                <path class="reed reed-a" d="M50 99 C44 77 49 58 61 40" />
+                <path class="reed reed-b" d="M67 101 C61 80 65 63 78 49" />
+              </g>
+              <g class="scene-sea">
+                <rect class="sea-sky" width="360" height="120" />
+                <circle class="sun" cx="286" cy="32" r="17" />
+                <path class="sea" d="M0 61 C45 48 93 75 142 61 C190 47 241 73 288 58 C322 48 343 48 360 53 L360 120 L0 120 Z" />
+                <path class="wave wave-a" d="M18 86 C44 74 69 98 96 86 C124 74 151 98 178 86 C205 74 232 98 260 86 C288 74 314 98 342 86" />
+                <path class="wave wave-b" d="M-4 105 C26 93 51 117 81 105 C111 93 139 117 169 105 C198 93 226 117 256 105 C286 93 316 117 366 105" />
+                <path class="gull" d="M76 34 C87 24 99 24 110 34 C121 24 134 24 145 34" />
+              </g>
+              <g class="scene-tear">
+                <rect class="tear-bg" width="360" height="120" />
+                <path class="cheek" d="M222 0 C190 38 196 89 236 120 L360 120 L360 0 Z" />
+                <path class="eye" d="M251 42 C269 31 292 31 310 43" />
+                <path class="tear-drop" d="M282 57 C300 78 308 92 308 103 C308 115 298 121 286 121 C274 121 263 114 263 101 C263 90 271 76 282 57 Z" />
+                <path class="small-drop" d="M237 70 C246 82 250 91 250 98 C250 105 244 110 237 110 C230 110 224 105 224 97 C224 90 229 81 237 70 Z" />
+              </g>
+            </svg>
+          </div>
+        </div>
+        <p class="result-text" id="radicalResult">点一个场景，看看“氵”会和谁组成新字。</p>
+      </section>
+
+      <section class="screen map-screen" data-page="3">
+        <div class="section-head">
+          <p class="eyebrow">第 4 关</p>
+          <h2>填字闯关迷宫</h2>
+          <p>选对词语才能走到终点，选错会停在死胡同。</p>
+        </div>
+        <div class="map-wrap" id="mazeWrap">
+          <svg viewBox="0 0 360 430" role="img" aria-label="填字闯关迷宫">
+            <rect width="360" height="430" rx="24" fill="#edf1df" />
+            <path class="maze-wall" d="M48 58 H312 V372 H48 Z" />
+            <path class="maze-wall" d="M48 140 H104 M154 58 V154 M204 58 V132 H312 M48 224 H112 M48 284 H104 M178 154 H238 M238 238 H312 M258 286 V372 M150 320 H238" />
+            <path class="maze-wall flower-yin-room" d="M194 274 H254 V338 H194 Z" />
+            <path class="maze-path base-path" d="M86 338 H130 V284 H130 V190 H116 V96" />
+            <path class="maze-path base-path" d="M86 338 H130 V284 H184 V230 H184 V306 H204" />
+            <path class="maze-path base-path" d="M86 338 H130 V284 H184 V230 H238 V176 H286 V96" />
+            <path id="correctMaze" class="maze-path correct-path" d="M86 338 H130 V284 H130 V190 H116 V96" />
+            <path id="wrongMaze" class="maze-path wrong-path" d="M86 338 H130 V284 H184 V230 H184 V306 H204" />
+            <path id="wrongMazeAlt" class="maze-path wrong-alt-path" d="M86 338 H130 V284 H184 V230 H238 V176 H286 V96" />
+            <circle class="maze-node start" cx="86" cy="338" r="26" />
+            <circle class="maze-node end" cx="116" cy="96" r="26" />
+            <circle class="maze-node dead" cx="224" cy="306" r="26" />
+            <circle class="maze-node dead dead-alt" cx="294" cy="96" r="24" />
+            <text class="maze-label phrase" x="63" y="345">柳岸</text>
+            <text class="maze-label phrase" x="92" y="103">花明</text>
+            <text class="maze-label phrase wrong-phrase" x="201" y="313">花阴</text>
+            <text class="maze-label phrase wrong-phrase alt" x="272" y="103">花影</text>
+            <path class="maze-flower" d="M91 73 C85 59 99 55 103 68 C111 55 125 63 114 76 C129 81 122 97 108 89 C103 104 87 98 96 84 C81 84 78 69 91 73 Z" />
+            <g class="maze-cross cross-yin">
+              <path d="M186 288 L214 316" />
+              <path d="M214 288 L186 316" />
+            </g>
+            <g class="maze-cross cross-ying">
+              <path d="M238 158 L266 186" />
+              <path d="M266 158 L238 186" />
+            </g>
+          </svg>
+          <div class="map-badge" id="mapBadge">等待选择</div>
+        </div>
+        <div class="choice-row" data-quiz="map">
+          <button type="button" data-answer="right">柳岸花明</button>
+          <button type="button" data-answer="wrong-yin">柳岸花阴</button>
+          <button type="button" data-answer="wrong-ying">柳岸花影</button>
+        </div>
+        <p class="result-text" id="mapResult">请选择正确词语，看看小路能不能走到终点。</p>
+      </section>
+
+      <section class="screen detective-screen" data-page="4">
+        <div class="section-head">
+          <p class="eyebrow">第 5 关</p>
+          <h2>书法侦探</h2>
+          <p>不是“练字任务”，而是修好线索，让故事继续。</p>
+        </div>
+        <div class="case-board" id="caseBoard">
+          <div class="gate">
+            <span class="lock">锁</span>
+            <div class="broken-word" id="brokenWord">门</div>
+          </div>
+          <div class="clue-paper">
+            <p>线索：字写稳，门才开。</p>
+            <div class="stroke-options" data-quiz="case">
+              <button type="button" data-answer="wrong">先横</button>
+              <button type="button" data-answer="right">先点</button>
+              <button type="button" data-answer="wrong">先钩</button>
+            </div>
+          </div>
+        </div>
+        <p class="result-text" id="caseResult">选对笔顺，门上的字会修好。</p>
+      </section>
+
+      <section class="screen share-screen" data-page="5">
+        <div class="section-head final-copy">
+          <h2>给你更喜欢的游戏点赞</h2>
+          <p>可多选喜欢的关卡，看看目前大家更想让孩子继续玩哪一种。</p>
+        </div>
+        <div class="vote-list" id="voteList">
+          <button class="vote-card" type="button" data-game="poem">
+            <span class="vote-icon">诗</span>
+            <span class="vote-copy"><strong>诗画密室</strong><em>填字点亮诗里的春天</em><i><em></em></i></span>
+            <b>赞</b>
+          </button>
+          <button class="vote-card" type="button" data-game="idiom">
+            <span class="vote-icon">成</span>
+            <span class="vote-copy"><strong>成语拼图</strong><em>在画里找字拼成语</em><i><em></em></i></span>
+            <b>赞</b>
+          </button>
+          <button class="vote-card" type="button" data-game="radical">
+            <span class="vote-icon">氵</span>
+            <span class="vote-copy"><strong>字形变变变</strong><em>偏旁走进不同场景</em><i><em></em></i></span>
+            <b>赞</b>
+          </button>
+          <button class="vote-card" type="button" data-game="maze">
+            <span class="vote-icon">迷</span>
+            <span class="vote-copy"><strong>填字闯关迷宫</strong><em>选对词语才能到终点</em><i><em></em></i></span>
+            <b>赞</b>
+          </button>
+          <button class="vote-card" type="button" data-game="detective">
+            <span class="vote-icon">探</span>
+            <span class="vote-copy"><strong>书法侦探</strong><em>修好字才能推进案子</em><i><em></em></i></span>
+            <b>赞</b>
+          </button>
+        </div>
+        <div class="share-actions">
+          <button type="button" id="restartBtn">再玩一次</button>
+        </div>
+        <p class="result-text share-result" id="shareText">点一个或多个游戏，生成适合朋友圈的分享语。</p>
+      </section>
+    </main>
+    <script src="./script.js"></script>
+  </body>
+</html>
