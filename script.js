@@ -4,6 +4,7 @@ const prevBtn = document.querySelector("#prevBtn");
 const nextBtn = document.querySelector("#nextBtn");
 const musicBtn = document.querySelector("#musicBtn");
 let page = 0;
+let autoAdvanceTimer;
 const bgMusic = new Audio("./assets/Soft Keys Drift.mp3");
 bgMusic.loop = true;
 bgMusic.volume = 0.42;
@@ -70,13 +71,6 @@ const gameNames = {
   maze: "填字闯关迷宫",
   detective: "书法侦探"
 };
-const baseVotes = {
-  poem: 128,
-  idiom: 96,
-  radical: 87,
-  maze: 142,
-  detective: 113
-};
 const selectedShareGames = new Set();
 
 screens.forEach((_, index) => {
@@ -86,6 +80,7 @@ screens.forEach((_, index) => {
 });
 
 function setPage(nextPage) {
+  window.clearTimeout(autoAdvanceTimer);
   page = Math.max(0, Math.min(screens.length - 1, nextPage));
   screens.forEach((screen, index) => {
     screen.classList.toggle("active", index === page);
@@ -95,6 +90,16 @@ function setPage(nextPage) {
   });
   prevBtn.style.visibility = page === 0 ? "hidden" : "visible";
   nextBtn.textContent = page === screens.length - 1 ? "↻" : "›";
+}
+
+function queueNextPage(delay = 1100) {
+  const pageWhenAnswered = page;
+  window.clearTimeout(autoAdvanceTimer);
+  autoAdvanceTimer = window.setTimeout(() => {
+    if (page === pageWhenAnswered && page < screens.length - 1) {
+      setPage(page + 1);
+    }
+  }, delay);
 }
 
 prevBtn.addEventListener("click", () => setPage(page - 1));
@@ -123,6 +128,7 @@ autoStartMusic();
 document.querySelector('[data-quiz="poem"]').addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+  window.clearTimeout(autoAdvanceTimer);
   document.querySelectorAll('[data-quiz="poem"] button').forEach((item) => item.classList.remove("active"));
   button.classList.add("active");
   const isRight = button.dataset.answer === "绿";
@@ -133,13 +139,16 @@ document.querySelector('[data-quiz="poem"]').addEventListener("click", (event) =
   document.querySelector("#poemResult").textContent = isRight
     ? "解锁成功：灯亮起来，柳色也醒了，孩子会记住“绿”是诗眼。"
     : "选错了：灯没有亮。没有扣分，再想想哪个字能点亮春天。";
+  if (isRight) queueNextPage(1200);
 });
 
 const idiomTarget = ["画", "蛇", "添", "足"];
 let idiomFound = [];
+const radicalVisited = new Set(["河"]);
 document.querySelector('[data-quiz="idiom"]').addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+  window.clearTimeout(autoAdvanceTimer);
   const answer = button.dataset.answer;
   const strip = document.querySelector("#idiomStrip");
   const successBadge = document.querySelector("#idiomSuccess");
@@ -172,13 +181,16 @@ document.querySelector('[data-quiz="idiom"]').addEventListener("click", (event) 
   document.querySelector("#idiomResult").textContent = idiomFound.length === 4
     ? "恭喜你回答正确：画蛇添足。画面里的“多余”就是成语意思。"
     : `已找到 ${idiomFound.length}/4 个字，再看看蛇的四周。`;
+  if (complete) queueNextPage(1200);
 });
 
 document.querySelector('[data-quiz="radical"]').addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+  window.clearTimeout(autoAdvanceTimer);
   document.querySelectorAll('[data-quiz="radical"] button').forEach((item) => item.classList.remove("active"));
   button.classList.add("active");
+  radicalVisited.add(button.dataset.answer);
   const word = document.querySelector("#radicalWord");
   word.classList.remove("reveal");
   requestAnimationFrame(() => {
@@ -194,11 +206,13 @@ document.querySelector('[data-quiz="radical"]').addEventListener("click", (event
   }[button.dataset.answer]);
   scene.setAttribute("aria-label", `${button.dataset.label}场景`);
   document.querySelector("#radicalResult").textContent = `${button.dataset.label}里出现“${button.dataset.answer}”：孩子会发现这些字都有同一张“脸”。`;
+  if (radicalVisited.size === 3) queueNextPage(1200);
 });
 
 document.querySelector('[data-quiz="map"]').addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+  window.clearTimeout(autoAdvanceTimer);
   document.querySelectorAll('[data-quiz="map"] button').forEach((item) => item.classList.remove("active"));
   button.classList.add("active");
   const isRight = button.dataset.answer === "right";
@@ -213,11 +227,13 @@ document.querySelector('[data-quiz="map"]').addEventListener("click", (event) =>
     "wrong-ying": "走不通：红线绕到“花影”死胡同里，没有到达花明。"
   };
   document.querySelector("#mapResult").textContent = messages[button.dataset.answer];
+  if (isRight) queueNextPage(1200);
 });
 
 document.querySelector('[data-quiz="case"]').addEventListener("click", (event) => {
   const button = event.target.closest("button");
   if (!button) return;
+  window.clearTimeout(autoAdvanceTimer);
   document.querySelectorAll('[data-quiz="case"] button').forEach((item) => item.classList.remove("active"));
   button.classList.add("active");
   const solved = button.dataset.answer === "right";
@@ -232,21 +248,21 @@ document.querySelector('[data-quiz="case"]').addEventListener("click", (event) =
   document.querySelector("#caseResult").textContent = solved
     ? "案子推进：门开了，孩子练的是笔顺，感受到的是破案。"
     : "线索不对：门锁晃了一下，还没有打开。再试试别的笔顺。";
+  if (solved) queueNextPage(1100);
 });
 
 document.querySelector("#restartBtn").addEventListener("click", () => setPage(0));
 
 function getVoteCount(game) {
-  return baseVotes[game] + (selectedShareGames.has(game) ? 1 : 0);
+  return selectedShareGames.has(game) ? 1 : 0;
 }
 
 function renderPollChart() {
-  const maxVotes = Math.max(...Object.keys(baseVotes).map(getVoteCount));
   document.querySelectorAll(".vote-card").forEach((card) => {
     const game = card.dataset.game;
     const count = getVoteCount(game);
-    card.querySelector(".vote-copy > i em").style.width = `${Math.max(8, Math.round((count / maxVotes) * 100))}%`;
-    card.querySelector("b").textContent = selectedShareGames.has(game) ? `${count}人` : "赞";
+    card.querySelector(".vote-copy > i em").style.width = count ? "100%" : "0%";
+    card.querySelector("b").textContent = count ? "已赞" : "赞";
   });
 }
 
