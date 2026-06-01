@@ -71,7 +71,30 @@ const gameNames = {
   maze: "填字闯关迷宫",
   detective: "书法侦探"
 };
+const voteGames = Object.keys(gameNames);
+const supabaseUrl = "https://cgryybmebglwehhymqbp.supabase.co";
+const supabaseKey = "sb_publishable_lThi5k4681QHTunwmkPZow_-2Zz_3ep";
+const voteCounts = Object.fromEntries(voteGames.map((game) => [game, 0]));
 const selectedShareGames = new Set();
+const pendingVotes = new Set();
+
+function getVisitorId() {
+  const saved = window.localStorage.getItem("kidGameVisitorId");
+  if (saved) return saved;
+  const next = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  window.localStorage.setItem("kidGameVisitorId", next);
+  return next;
+}
+
+const visitorId = getVisitorId();
+
+try {
+  JSON.parse(window.localStorage.getItem("kidGameLikedGames") || "[]")
+    .filter((game) => voteGames.includes(game))
+    .forEach((game) => selectedShareGames.add(game));
+} catch {
+  window.localStorage.removeItem("kidGameLikedGames");
+}
 
 screens.forEach((_, index) => {
   const dot = document.createElement("span");
@@ -254,16 +277,66 @@ document.querySelector('[data-quiz="case"]').addEventListener("click", (event) =
 document.querySelector("#restartBtn").addEventListener("click", () => setPage(0));
 
 function getVoteCount(game) {
-  return selectedShareGames.has(game) ? 1 : 0;
+  return voteCounts[game] || 0;
 }
 
 function renderPollChart() {
+  const hasResults = selectedShareGames.size > 0;
+  const maxVotes = Math.max(1, ...voteGames.map(getVoteCount));
+  document.querySelector("#voteList").classList.toggle("has-results", hasResults);
   document.querySelectorAll(".vote-card").forEach((card) => {
     const game = card.dataset.game;
     const count = getVoteCount(game);
-    card.querySelector(".vote-copy > i em").style.width = count ? "100%" : "0%";
-    card.querySelector("b").textContent = count ? "已赞" : "赞";
+    card.classList.toggle("active", selectedShareGames.has(game));
+    card.querySelector(".vote-copy > i em").style.width = hasResults ? `${Math.max(6, Math.round((count / maxVotes) * 100))}%` : "0%";
+    card.querySelector("b").textContent = hasResults ? `${count}人` : "赞";
   });
+}
+
+function saveLikedGames() {
+  window.localStorage.setItem("kidGameLikedGames", JSON.stringify([...selectedShareGames]));
+}
+
+async function fetchVoteCount(game) {
+  const response = await fetch(`${supabaseUrl}/rest/v1/game_votes?game=eq.${encodeURIComponent(game)}&select=id`, {
+    method: "HEAD",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      Prefer: "count=exact"
+    }
+  });
+  if (!response.ok) throw new Error(`Count failed: ${response.status}`);
+  const range = response.headers.get("content-range") || "";
+  return Number(range.split("/").pop()) || 0;
+}
+
+async function syncVoteCounts() {
+  try {
+    const counts = await Promise.all(voteGames.map((game) => fetchVoteCount(game)));
+    voteGames.forEach((game, index) => {
+      voteCounts[game] = counts[index];
+    });
+    renderPollChart();
+  } catch {
+    document.querySelector("#shareText").textContent = "真实点赞数暂时加载失败，稍后再试。";
+  }
+}
+
+async function submitVote(game) {
+  const response = await fetch(`${supabaseUrl}/rest/v1/game_votes?on_conflict=visitor_id,game`, {
+    method: "POST",
+    headers: {
+      apikey: supabaseKey,
+      Authorization: `Bearer ${supabaseKey}`,
+      "Content-Type": "application/json",
+      Prefer: "resolution=ignore-duplicates,return=minimal"
+    },
+    body: JSON.stringify({ game, visitor_id: visitorId })
+  });
+  if (!response.ok && response.status !== 409) {
+    throw new Error(`Vote failed: ${response.status}`);
+  }
 }
 
 function updateShareLine(randomize = false) {
@@ -290,15 +363,26 @@ document.querySelector("#voteList").addEventListener("click", (event) => {
   const card = event.target.closest(".vote-card");
   if (!card) return;
   const game = card.dataset.game;
-  if (selectedShareGames.has(game)) {
-    selectedShareGames.delete(game);
-    card.classList.remove("active");
-  } else {
-    selectedShareGames.add(game);
-    card.classList.add("active");
+  if (selectedShareGames.has(game) || pendingVotes.has(game)) {
+    updateShareLine(false);
+    return;
   }
-  renderPollChart();
-  updateShareLine(false);
+  pendingVotes.add(game);
+  card.querySelector("b").textContent = "记录中";
+  submitVote(game)
+    .then(() => {
+      selectedShareGames.add(game);
+      pendingVotes.delete(game);
+      saveLikedGames();
+      updateShareLine(false);
+      return syncVoteCounts();
+    })
+    .catch(() => {
+      pendingVotes.delete(game);
+      saveLikedGames();
+      document.querySelector("#shareText").textContent = "这次点赞没有记上，可能是网络或数据库权限还没配置好。";
+      renderPollChart();
+    });
 });
 
 let touchStartX = 0;
@@ -314,3 +398,5 @@ document.addEventListener("touchend", (event) => {
 
 setPage(0);
 renderPollChart();
+updateShareLine(false);
+syncVoteCounts();
